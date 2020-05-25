@@ -129,6 +129,12 @@ void_invocable to_void_invocable(Receiver&& recv)
 
 struct thread_pool::sender_type
 {
+   template<template<class...> class Tuple, template<class...> class Variant>
+     using value_types = Variant<Tuple<>>;
+   template<template<class...> class Variant>
+     using error_types = Variant<std::exception_ptr>;
+   static constexpr bool sends_done = false;
+
    explicit sender_type(thread_pool& p) 
      : pool(&p)
    {}
