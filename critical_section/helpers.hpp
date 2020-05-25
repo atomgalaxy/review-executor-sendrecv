@@ -21,9 +21,37 @@ struct _then_receiver : R { // for exposition, inherit set_error and set_done fr
 };
 
 template<sender S, class F>
+struct then_sender_types
+{};
+
+
+template<typed_sender S, class F>
+struct then_sender_types
+{
+    template<template<class...> class Tuple>
+    struct invoke_result_tuple
+    {
+       template<class... Args>
+       using type = Tuple<std::invoke_result_t<F, Args...>>;
+    };
+
+
+    template<template<class...> class Tuple, template<class...> class Variant>
+      using value_types = typename sender_traits<S>::template value_types<invoke_result_tuple<Tuple>::template type, Variant>; 
+    template<template<class...> class Variant>
+      using error_types = typename sender_traits<S>::template error_types<Variant>;
+    static constexpr bool sends_done = sender_traits<S>::sends_done;
+
+};
+
+
+
+template<sender S, class F>
 struct _then_sender {
     S s_;
     F f_;
+
+    
 
     template<receiver R>
       requires sender_to<S, _then_receiver<R, F>>
