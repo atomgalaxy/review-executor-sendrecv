@@ -1,12 +1,11 @@
 #pragma once
 
+#include "https://raw.githubusercontent.com/atomgalaxy/review-executor-sendrecv/master/critical_section/concepts.hpp"
+
 #include <optional>
 #include <variant>
 #include <tuple>
 #include <type_traits>
-
-#include "concepts.hpp"
-
 
 template<typename... Values>
 struct received_values

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "concepts.hpp"
+#include "https://raw.githubusercontent.com/atomgalaxy/review-executor-sendrecv/master/critical_section/concepts.hpp"
 #include <iostream>
 
 // copied from paper

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "concepts.hpp"
-#include "capture_sender.hpp"
+#include "https://raw.githubusercontent.com/atomgalaxy/review-executor-sendrecv/master/critical_section/concepts.hpp"
+#include "https://raw.githubusercontent.com/atomgalaxy/review-executor-sendrecv/master/critical_section/capture_sender.hpp"
 
 template<typename Receiver>
 struct resume_via_visitor
