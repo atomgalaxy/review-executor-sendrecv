@@ -63,7 +63,7 @@ struct received_result
     using type = typename with_errors::template type<sender_traits<S>::sends_done>;
 };
   
-Ltemplate<typed_sender S>
+template<typed_sender S>
 using received_result_t = typename received_result<S>::type;
 
 template<receiver Receiver, typename StoredResult>
