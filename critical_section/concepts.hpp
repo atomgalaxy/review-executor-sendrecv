@@ -18,7 +18,7 @@ concept sender = true;
 template<template<template<class...> class Tuple, template<class...> class Variant> class>
 struct has_value_types; // exposition only
 
-template<template<class...> class Variant>
+template<template<template<class...> class Variant> class>
 struct has_error_types; // exposition only
 
 template<class S>
