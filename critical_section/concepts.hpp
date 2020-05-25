@@ -26,7 +26,7 @@ concept has_sender_types = // exposition only
  requires {
    typename has_value_types<S::template value_types>;
    typename has_error_types<S::template error_types>;
-   typename bool_constant<S::sends_done>;
+   typename std::bool_constant<S::sends_done>;
  };
 
 template<class S>
