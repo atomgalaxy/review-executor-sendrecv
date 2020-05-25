@@ -81,7 +81,7 @@ struct thread_pool
         std::unique_lock<std::mutex> lock(mutex);
         tasks.push_back(std::move(f));
       }
-
+      cv.notify_one();
     }
 
     scheduler_type scheduler();
