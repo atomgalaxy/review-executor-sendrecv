@@ -98,6 +98,11 @@ struct resume_via_sender
        
        return operation_type(std::move(wrap), std::forward<Receiver>(r));
     };
+
+    Scheduler scheduler() const
+    {
+       return sched;
+    }
 };
 
 template<scheduler Scheduler, typename ReceivedArgs>

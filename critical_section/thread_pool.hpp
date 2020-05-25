@@ -157,6 +157,8 @@ struct thread_pool::sender_type
        s.pool->enque(to_void_invocable(std::forward<Receiver>(r)));
    }
 
+   thread_pool::scheduler_type scheduler() const;
+
 private:
    thread_pool* pool;
 };
@@ -177,7 +179,12 @@ private:
    thread_pool* pool;
 };
 
-thread_pool::scheduler_type thread_pool::scheduler()
+inline thread_pool::scheduler_type thread_pool::scheduler()
 {
     return scheduler_type(*this);
+}
+   
+inline thread_pool::scheduler_type thread_pool::sender_type::scheduler() const
+{
+   return thread_pool::scheduler_type(*pool);
 }

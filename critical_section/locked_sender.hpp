@@ -43,7 +43,6 @@ struct lock_mutex_sender
    {
       using decayed_receiver = std::remove_cvref_t<Receiver>;
 
-   
       struct operation_type : handle_base
       {
          async_mutex* mutex;
@@ -81,6 +80,11 @@ struct lock_mutex_sender
       };
       
       return operation_type(std::move(wrap), std::forward<Receiver>(r));
+   }
+
+   auto scheduler() const
+   {
+      return sched;
    }
 };
 
@@ -130,7 +134,7 @@ struct unlock_mutex_receiver
 };
 
 template<typed_sender Sender, typename Work>
-  requires std::invocable<Work, Sender>
+  requires std::invocable<Work, Sender> && sender_with_scheduler<Sender>
 struct lock_sender
 {
    Sender send;
@@ -141,7 +145,7 @@ struct lock_sender
      requires sender_to<std::invoke_result_t<Work, Sender>, Receiver>
    friend auto connect(lock_sender wrap, Receiver&& recv)
    {
-      using scheduler_type = std::remove_cvref_t<decltype(recv.get_scheduler())>;
+      using scheduler_type = std::remove_cvref_t<decltype(wrap.scheduler())>;
       using locking_sender = lock_mutex_sender<Sender, scheduler_type>;
       using nested_sender = std::invoke_result_t<Work, locking_sender>;
    
@@ -159,7 +163,7 @@ struct lock_sender
           : handle(nullptr),
             nested_op(connect(
               std::invoke(std::move(wrap.work), 
-                          locking_sender{std::move(wrap.send), r.get_scheduler(), wrap.mutex, &handle}),
+                          locking_sender{std::move(wrap.send), wrap.scheduler(), wrap.mutex, &handle}),
                           nested_receiver{std::forward<Receiver>(r), wrap.mutex, &handle}))
         {}
            
@@ -172,6 +176,11 @@ struct lock_sender
       };
        
       return operation_type(std::move(wrap), std::forward<Receiver>(recv));
+   }
+
+   auto scheduler() const
+   {
+      return send.scheduler();
    }
 
 };

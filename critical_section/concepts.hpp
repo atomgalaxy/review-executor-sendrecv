@@ -25,6 +25,12 @@ template<typename S>
 concept scheduler = true;
 
 template<typename S>
+concept sender_with_scheduler = sender<S> && 
+  requires (std::remove_cvref_t<S> const& s) { 
+    { s.scheduler() } -> scheduler;
+  };
+
+template<typename S>
 struct sender_traits 
 {
     template<template<class...> class Tuple, template<class...> class Variant>

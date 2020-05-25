@@ -30,6 +30,12 @@ struct _then_sender {
     friend operation_state_type<S, _then_receiver<R, F>> connect(_then_sender s, R r) {
         return connect((S&&)s.s_, _then_receiver<R, F>{(R&&)r, (F&&)s.f_});
     }
+
+    auto scheduler() const
+      requires sender_with_scheduler<S>
+    { 
+      return s_.scheduler();
+    }
 };
 
 template<sender S, class F>
@@ -37,6 +43,7 @@ auto then(S s, F f) {
     return _then_sender{(S&&)s, (F&&)f};
 }
 // end of paper
+struct inline_scheduler;
 
 struct inline_sender
 {
@@ -69,8 +76,22 @@ struct inline_sender
                  
       return operation(std::forward<Receiver>(r));
     }
+
+    inline_scheduler scheduler() const;
 };
 
+struct inline_scheduler
+{
+  inline_sender schedule()
+  {
+     return {};
+  }
+};
+
+inline inline_scheduler inline_sender::scheduler() const
+{
+  return {};
+}
 
 struct just10_sender
 {
@@ -103,15 +124,13 @@ struct just10_sender
                  
       return operation(std::forward<Receiver>(r));
     }
+
+    inline_scheduler scheduler() const
+    {
+      return {};
+    }
 };
 
-struct inline_scheduler
-{
-  inline_sender schedule()
-  {
-     return {};
-  }
-};
 
 struct link_error_receiver
 {
@@ -139,6 +158,4 @@ struct print_receiver
    void set_error(Arg&&) { std::cout << "got error" << std::endl; }
    
    void set_done()  { std::cout << "got done" << std::endl; }
-   
-   inline_scheduler get_scheduler() const { return {}; };
 };

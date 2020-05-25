@@ -134,6 +134,12 @@ struct capture_sender
        
        return operation_type(std::move(wrapper.s), std::forward<Receiver>(r));
     }
+
+    auto scheduler() const
+      requires sender_with_scheduler<Sender>
+    {
+       return s.scheduler();
+    }
 };
 
 template<sender Sender>
