@@ -86,6 +86,12 @@ struct thread_pool
 
     scheduler_type scheduler();
 
+    void join()
+    {
+      for (auto& thread : workers)
+        thread.join();
+    }
+
 private:
     void runWork(std::stop_token st)
     {
