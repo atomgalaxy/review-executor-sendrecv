@@ -15,8 +15,24 @@ concept receiver_of = receiver<R> && true;
 template<typename S>
 concept sender = true;
 
-template<typename S>
-concept typed_sender = sender<S> && true;
+template<template<template<class...> class Tuple, template<class...> class Variant> class>
+struct has_value_types; // exposition only
+
+template<template<class...> class Variant>
+struct has_error_types; // exposition only
+
+template<class S>
+concept has_sender_types = // exposition only
+ requires {
+   typename has_value_types<S::template value_types>;
+   typename has_error_types<S::template error_types>;
+   typename bool_constant<S::sends_done>;
+ };
+
+template<class S>
+concept typed_sender =
+  sender<S> &&
+  has_sender_types<std::remove_cvref_t<S>>;
 
 template<typename S, typename R>
 concept sender_to = sender<R> && receiver<R> && true;

@@ -115,7 +115,7 @@ private:
 template<receiver_of Receiver>
 void_invocable to_void_invocable(Receiver&& recv)
 {
-   return void_invocable(std::in_place, [r = std::forward<Receiver>(recv)] {
+   return void_invocable(std::in_place, [r = std::forward<Receiver>(recv)] () mutable {
      try
      {
          std::move(r).set_value();

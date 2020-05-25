@@ -24,9 +24,8 @@ template<sender S, class F>
 struct then_sender_types
 {};
 
-
 template<typed_sender S, class F>
-struct then_sender_types
+struct then_sender_types<S, F>
 {
     template<template<class...> class Tuple>
     struct invoke_result_tuple
@@ -35,23 +34,17 @@ struct then_sender_types
        using type = Tuple<std::invoke_result_t<F, Args...>>;
     };
 
-
     template<template<class...> class Tuple, template<class...> class Variant>
       using value_types = typename sender_traits<S>::template value_types<invoke_result_tuple<Tuple>::template type, Variant>; 
     template<template<class...> class Variant>
       using error_types = typename sender_traits<S>::template error_types<Variant>;
     static constexpr bool sends_done = sender_traits<S>::sends_done;
-
 };
 
-
-
 template<sender S, class F>
-struct _then_sender {
+struct _then_sender : then_sender_types<S, F> {
     S s_;
     F f_;
-
-    
 
     template<receiver R>
       requires sender_to<S, _then_receiver<R, F>>
@@ -68,7 +61,7 @@ struct _then_sender {
 
 template<sender S, class F>
 auto then(S s, F f) {
-    return _then_sender{(S&&)s, (F&&)f};
+    return _then_sender<S, F>{{}, (S&&)s, (F&&)f};
 }
 // end of paper
 struct inline_scheduler;
