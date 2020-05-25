@@ -23,7 +23,7 @@ public:
    bool enqueue(handle_base* op)
    {
       std::lock_guard<std::mutex> lock(m);
-      if (head == tail)
+      if (head == nullptr)
       {
           head = tail = op;
           return true;
