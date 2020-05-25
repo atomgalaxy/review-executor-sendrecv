@@ -1,7 +1,8 @@
+#ifndef GODBOLT_COMPATIBLE
 #pragma once
-
-#include "https://raw.githubusercontent.com/atomgalaxy/review-executor-sendrecv/master/critical_section/concepts.hpp"
-#include "https://raw.githubusercontent.com/atomgalaxy/review-executor-sendrecv/master/critical_section/capture_sender.hpp"
+#include "concepts.hpp"
+#include "capture_sender.hpp"
+#endif // GODBOLT_COMPATIBLE
 
 template<typename Receiver>
 struct resume_via_visitor

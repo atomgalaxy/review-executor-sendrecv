@@ -1,6 +1,7 @@
+#ifndef GODBOLT_COMPATIBLE
 #pragma once
-
-#include "https://raw.githubusercontent.com/atomgalaxy/review-executor-sendrecv/master/critical_section/concepts.hpp"
+#include "concepts.hpp"
+#endif // GODBOLT_COMPATIBLE
 
 #include <optional>
 #include <variant>
@@ -62,7 +63,7 @@ struct received_result
     using type = typename with_errors::template type<sender_traits<S>::sends_done>;
 };
   
-template<typed_sender S>
+Ltemplate<typed_sender S>
 using received_result_t = typename received_result<S>::type;
 
 template<receiver Receiver, typename StoredResult>

@@ -1,4 +1,6 @@
+#ifndef GODBOLT_COMPATIBLE
 #pragma once
+#endif // GODBOLT_COMPATIBLE
 
 #include <functional>
 #include <type_traits>

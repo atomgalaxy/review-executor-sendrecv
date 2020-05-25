@@ -1,9 +1,11 @@
+#ifndef GODBOLT_COMPATIBLE
 #pragma once
+#include "concepts.hpp"
+#include "capture_sender.hpp"
+#include "resume_via_sender.hpp"
+#include "async_mutex.hpp"
+#endif // GODBOLT_COMPATIBLE
 
-#include "https://raw.githubusercontent.com/atomgalaxy/review-executor-sendrecv/master/critical_section/concepts.hpp"
-#include "https://raw.githubusercontent.com/atomgalaxy/review-executor-sendrecv/master/critical_section/capture_sender.hpp"
-#include "https://raw.githubusercontent.com/atomgalaxy/review-executor-sendrecv/master/critical_section/resume_via_sender.hpp"
-#include "https://raw.githubusercontent.com/atomgalaxy/review-executor-sendrecv/master/critical_section/async_mutex.hpp"
 
 template<typename Scheduler, typename Receiver, typename Operation>
 struct lock_mutex_receiver
