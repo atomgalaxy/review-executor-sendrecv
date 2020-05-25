@@ -15,6 +15,7 @@
 
 struct poor_void_invocable_interface
 {
+    poor_void_invocable_interface() = default;
     poor_void_invocable_interface(poor_void_invocable_interface&&) = delete;
 
     virtual void call() && noexcept = 0;
@@ -43,7 +44,7 @@ struct void_invocable
     void_invocable() = default;
     template<typename T, typename... Args>
     explicit void_invocable(std::in_place_type_t<T>, Args&&... args)
-      : val(std::make_unique<poor_void_invocable_impl<T>>(std::forward<Args>(args)...))
+      : val(std::make_unique<poor_void_invocable_impl<T>>(std::in_place, std::forward<Args>(args)...))
     {}
 
     template<typename Arg>
@@ -122,7 +123,7 @@ void_invocable to_void_invocable(Receiver&& recv)
      } 
      catch (...)
      {
-         std::move(r).set_exception();
+         std::move(r).set_error(std::current_exception());
      }
    });
 }
