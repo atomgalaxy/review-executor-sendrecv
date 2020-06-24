@@ -55,9 +55,7 @@ struct my_receiver
 
 ## More examples needed in order to explain misunderstandings
 
-We ran into trouble understanding the current intention for usage patterns of sender/receiver when trying to implement a telnet client. Kirk Shoop was kind enough to elaborate, but we never finished it regardless.
-
-TODO (Dietmar): review.
+We ran into trouble understanding the current intention for usage patterns of sender/receiver when trying to implement a telnet client. Kirk Shoop was kind enough to elaborate, but we never finished it regardless (although that was partly due to being dragged into other projects)..
 
 The standard might not be a teaching document, but the papers should be. Kirk graciously supplied the following example of a telnetish-client:
 
@@ -76,9 +74,11 @@ sync_wait(
   context);
 ```
 
-An example of a telnet client implementation, for instance, would be welcome.
+This snippet, obviously, just does something akin to a "ping" but it does illustrate how an asynchronous client could be implemented.  The [experimental implementation](https://github.com/dietmarkuehl/kuhllib/tree/sender-receiver/src/sender-receiver) of the [Networking TS](http://wg21.link/n4771) using sender/receivers got to the point to make the above code operational.  An example of a telnet-like client implementation, for instance, would be welcome.
 
-It's also noted that the paper currently comes with quite a few TODOs, mainly about streams, which should probably be worked out before we ship the design.
+The [experimental implementation](https://github.com/dietmarkuehl/kuhllib/tree/sender-receiver/src/sender-receiver) was done natively instead of using the facilities from the [Networking TS](http://wg21.link/n4771). In retrospect it seems possible to use the interfaces from the [Networking TS](http://wg21.link/n4771) to implement the asynchronous operations in terms of sender/receivers, though: the sender would still be a custom class producing an operation state object. However, the actual asynchronous operation could use the completion token abstraction to plug into the sender/receiver protocol using the operation state. Such an implementation of the asynchronous operations isn't done, yet.
+
+It's also noted that the paper currently comes with quite a few TODOs, mainly about streams, which should probably be worked out before we ship the design. Without a streams concept it is unclear how to use sender/receivers to process repeated operations like repeatedly reading packets from a socket or repeatedly accepting a client connection when listening on a port.
 
 Main discussion: https://github.com/atomgalaxy/review-executor-sendrecv/issues/11
 
