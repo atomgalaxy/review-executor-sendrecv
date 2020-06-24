@@ -33,30 +33,6 @@ This is the report of the Executors review group 2: Senders/Receivers.
 
 # Findings
 
-## Forward/Backward propagation of executors
-
-Tomasz Kaminsky, https://github.com/atomgalaxy/review-executor-sendrecv/issues/12
-
-We'd like some discussion in the paper about which executor a particular receiver is executed on when using `on()`, and why.
-
-Specifically:
-
-```cpp
-auto s1 = on(std::move(previous), sch1);
-auto s2 = work(std::move(s1));
-auto s3 = on(std::move(s2), sch2);
-```
-
-Does the "work" from `work` run on `sch1` or `sch2`, and why?
-
-Another example:
-
-```cpp
-on(just(val), sch);
-```
-
-Does `just` extract the scheduler from the receiver of `on` and run there, or does `just` execute inline?
-
 ## The `sender_with_scheduler` concept
 
 Discussion about whether it's a good idea to add this or is it a misunderstanding.
@@ -273,10 +249,52 @@ This should be simplified to:
 
 Casey Carter has acknowledged this and it seems to make sense.
 
-## Implementation of critical section-capable scheduling, a need for a `sender_with_scheduler`
+## Implementation of critical section-capable scheduling, a need to extract scheduler from context
 
 This is issue <https://github.com/atomgalaxy/review-executor-sendrecv/issues/1>.
 
-Tomasz implemented a scheduler and support for critical-section capable sender, receiver, and scheduler, along with an `async_mutex`. During this work, the need for a `sender_with_scheduler` became apparent.
+Tomasz implemented a scheduler and support for critical-section capable sender, receiver, and scheduler, along with an `async_mutex`.
 
-TODO (Tomasz): please write a summary.
+The major requirement for the projects where:
+ * avoid dynamic allocation
+ * provide RAII semantics (mutex is automatically locked/unlocked)
+ * preserve execution context of the work
+
+I have found out that the final requirement is not expressable with current design ([P0443](wg21.link/p0443)), as 
+to resume an "blocked" work, I need to have ability to extract the scheduler from the current context of the execution.
+
+Initially, I have inveted my own `sender_with_scheduler` concept, to provide functionality, as I have found 
+`schedule_provider` as proposed in [P1898](wg21.link/p1898) inapropariate - I wanted to continue on the
+executor where `set_value` was invoked, not want provided by `receiver`.
+
+The discussion with the authors in the [issue](https://github.com/atomgalaxy/review-executor-sendrecv/issues/12), helped
+me to understand that the `schedule_provider` is sufficient in my case, however, I am still unclear regarding of the
+expected semantic of `scheduler` propagation.
+
+## Forward/Backward propagation of executors
+
+This is related to the extension of the senders/receiver design, proposed in  [P1898](wg21.link/p1898). 
+However, this touches a very basic semantics of the algorithms defined in terms of sender/receiver, and 
+we think that it would be beneficial to clarfiy this up-front.
+
+With the `schedule_provider` concept it is possible to have two competing `schedulers` for the 
+single operation, and it is unclear where it will be actually executed.
+
+Specifically:
+
+```cpp
+auto s1 = on(std::move(previous), sch1);
+auto s2 = work(std::move(s1));
+auto s3 = on(std::move(s2), sch2);
+```
+Does `work` run on the `sch1` propagated from `s1` or use `s2` provided by `schedule_provider` `on(..., sch2)`, and why?
+
+Another example:
+
+```cpp
+on(just(val), sch);
+```
+
+Does `just` extract the scheduler from the receiver of `on` and run there, or does `just` execute inline?
+
+
