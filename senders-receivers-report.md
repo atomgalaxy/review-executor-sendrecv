@@ -249,21 +249,23 @@ This is issue <https://github.com/atomgalaxy/review-executor-sendrecv/issues/1>.
 
 Tomasz implemented a scheduler and support for critical-section capable sender, receiver, and scheduler, along with an `async_mutex`.
 
-The major requirement for the projects where:
+The major requirement for the projects were:
+
  * avoid dynamic allocation
  * provide RAII semantics (mutex is automatically locked/unlocked)
- * preserve execution context of the work
+ * preserve the execution context of the work
 
-I have found out that the final requirement is not expressable with current design ([P0443](wg21.link/p0443)), as 
-to resume an "blocked" work, I need to have ability to extract the scheduler from the current context of the execution.
+The final requirement is not expressible with the current design ([P0443](wg21.link/p0443)), as 
+to resume an "blocked" work, one needs to have the ability to extract the scheduler from the current execution context.
 
-Initially, I have inveted my own `sender_with_scheduler` concept, to provide functionality, as I have found 
-`schedule_provider` as proposed in [P1898](wg21.link/p1898) inapropariate - I wanted to continue on the
-executor where `set_value` was invoked, not want provided by `receiver`.
+Initially, Tomasz used his own `sender_with_scheduler` concept to provide this functionality, as 
+`schedule_provider`, as proposed in [P1898](wg21.link/p1898), seemed unsuitable - it was impossible to continue on the
+same executor where `set_value` was invoked, and not the one provided by the associated `receiver`.
 
-The discussion with the authors in the [issue](https://github.com/atomgalaxy/review-executor-sendrecv/issues/12), helped
-me to understand that the `schedule_provider` is sufficient in my case, however, I am still unclear regarding of the
-expected semantic of `scheduler` propagation.
+After a discussion with the authors in the [issue](https://github.com/atomgalaxy/review-executor-sendrecv/issues/12),
+the group found a way to use the proposed `schedule_provider` for this particular case. However, the semantic (forward/backward) for the propagation of the scheduler is still unclear.
+
+We suggest another example be provided to avoid further misunderstandings regarding the intended usage.
 
 ## Forward/Backward propagation of executors
 
