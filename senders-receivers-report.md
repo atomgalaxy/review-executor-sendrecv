@@ -100,8 +100,6 @@ struct has-error-types; // exposition only
 
 This is issue <https://github.com/atomgalaxy/review-executor-sendrecv/issues/10>.
 
-TODO (Tomasz): review.
-
 ## `as_receiver::set_value` should be `&&`-qualified
 
 Given that:
