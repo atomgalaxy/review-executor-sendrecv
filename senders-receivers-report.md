@@ -73,7 +73,7 @@ Is this an omission in requirements, or are senders produced from `schedule` all
 
 This is <https://github.com/executors/executors/issues/467> and <https://github.com/atomgalaxy/review-executor-sendrecv/issues/9> .
 
-To illustarte, it is unclear what types be used as `Args...` and `E` for the below receiver, for `execution::submit(execution::schedule(sch), my_receiver)` to be valid fpr any `scheduler sch`:
+To illustarte, it is unclear what types be used as `Args...` and `E` for the below receiver, for `execution::submit(execution::schedule(sch), my_receiver)` to be valid for any `scheduler sch`:
 ```cpp
 struct my_receiver
 {
