@@ -33,12 +33,6 @@ This is the report of the Executors review group 2: Senders/Receivers.
 
 # Findings
 
-## The `sender_with_scheduler` concept
-
-Discussion about whether it's a good idea to add this or is it a misunderstanding.
-
-TODO: (Tomasz) elaborate, please, give a concise example of what it enables.
-
 ## Receivers that match any scheduler are impossible to write
 
 The `scheduler` concept is underconstrained, because it does not define a sensible constraint for the produced sender. Therefore, one cannot write a receiver that would match any scheduler.
