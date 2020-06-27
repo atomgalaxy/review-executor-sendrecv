@@ -173,36 +173,48 @@ intention and direction (i.e. the three questions enumerated above).
 
 This is issue <https://github.com/atomgalaxy/review-executor-sendrecv/issues/7>.
 
-## Flesh out the discussion on the ref-qualification of `as-invocable::operator()`
+## `as-invocable::operator()` ref qualification
 
-The motivation for the function call operator of `as-invocable` being mutable lvalue ref qualified is unclear.
+The motivation for the function call operator of `as-invocable` being mutable
+lvalue ref qualified is unclear.
 
-It doesn't make sense conceptually, given that the "receiver contract"
-(§1.5.1) implies that invoking the function call operator of an instance of
-`as-invocable` is "terminal" (since either `std::execution::set_value` will
-be called and not throw, or `::set_error` will be called). As such, this
-function being invocable on rvalues only seems perfectly legitimate. If
-anything it seems to me that it should be disallowed to call it on lvalues,
-not vice versa.
+Since `as-invocable::operator()` will either call `set_value` or `set_done` on
+the underlying receiver then that receiver's lifecycle is complete as per the
+"receiver contract" (i.e. one may no longer call receiver functions on it).
+Accordingly invoking `as-invocable::operator()` a second time would be invalid.
 
-Beyond not making conceptual sense §2.2.3.4 doesn't seem to prohibit
-`std::execution::execute` from treating submitted function objects as rvalues
-when invoking them. In fact the example `inline_executor` (§1.3) potentially
-does exactly this (as it employs perfect forwarding).
+Opposite suggesting lvalueness this formulation is evocative of rvalueness. This
+is bolstered by the fact that the implementation of `as-invocable` actually does
+move from its indirect receiver in `operator()`.
 
-Which means that `inline_executor` [doesn't seem to work](https://godbolt.org/z/zP8hUA) with the current formulation of `as-invocable`.
+More confusingly:
 
-Its implementation also moves from the pointed-to object `r_`, which further makes this pretty weird.
+- §2.2.3.4 doesn't seem to prohibit `std::execution::execute` from treating
+  submitted function objects as rvalues when invoking them
+- The `executor_of` concept suggests function objects should be invoked as
+  lvalues
+- The `inline_executor` example [doesn't work](https://godbolt.org/z/zP8hUA)
+  with the current formulation of `as-invocable`
 
-TODO (Robert): check this section
+This is part of issue
+<https://github.com/atomgalaxy/review-executor-sendrecv/issues/5>.
 
-The paper should also mention the exception safety of first moving from `r_`
-in `execution::set_value(std::move(*r_));` and then calling
-`execution::set_error(std::move(*r_), current_exception());` on an exception.
-The executors team noted that this was discussed, but the paper lacks clarity
-on this decision.
+## `as-invocable` moves-from pointee receiver
 
-More details in <https://github.com/atomgalaxy/review-executor-sendrecv/issues/5>.
+`as-invocable::operator()` moves from the receiver its member `r_` points to
+when calling `set_value` however that may throw an exception. In that case it
+then proceeds to move from `*r_` again when calling `set_error`. This seems to
+run afoul of best practices regarding moving from objects.
+
+The executors team pointed out that this was discussed and that the alternative
+is to allow `set_value` to be implicitly consuming.
+
+Another alternative would be to require that `set_value` offer an exception
+guarantee (i.e. if it throws it will leave the receiver in a state suitable for
+`set_error` to be called).
+
+This is part of issue
+<https://github.com/atomgalaxy/review-executor-sendrecv/issues/5>.
 
 ## The fallback wrapping providing implicit convertibility between types satisfying disparate concepts is confusinghttps://github.com/atomgalaxy/review-executor-sendrecv/issues/4
 
