@@ -100,14 +100,14 @@ struct has-error-types; // exposition only
 
 This is issue <https://github.com/atomgalaxy/review-executor-sendrecv/issues/10>.
 
-## `as_receiver::set_value` should be `&&`-qualified
+## `as_receiver::set_value` should preserve the value category of the invocable
 
 Given that:
 
 - `set_value` (when it succeeds) is "terminal" and
 - `as-receiver::set_error` and `::set_done` don't make use of `as-receiver::f_`
 
-It's not clear to me why `as-receiver::set_value` shouldn't be changed from:
+`as-receiver::set_value` could be changed from:
 
 ```cpp
 void set_value() noexcept(is_nothrow_invocable_v<F&>) {
@@ -118,14 +118,27 @@ void set_value() noexcept(is_nothrow_invocable_v<F&>) {
 to
 
 ```cpp
-void set_value() && noexcept(is_nothrow_invocable_v<F&&>) {
+void set_value() noexcept(is_nothrow_invocable_v<F&&>) {
   invoke(move(f_));
 }
 ```
 
-Also, the rest of the paper be made consistent.
+The executors team noted that this was because of the way in which `executor_of`
+is specified (it only requires that the provided function object type be lvalue
+invocable). This could be an argument for changing both `as-receiver::set_value`
+and `executor_of`.
 
-TODO (Robert): please review.
+If we examine `executor_of` with respect to `inline_executor` (which is in P0443
+as an example) we find that:
+
+- `inline_executor::execute` is sensible in that it propagates the value
+  category of the function object when invoking it
+- For some type `F` which is lvalue invocable but not rvalue invocable (and
+  which is also default constructible for ease of exposition):
+  - `executor_of<inline_executor, F>` is satistied but
+  - `inline_executor{}.execute(F{})` is ill-formed
+
+This is issue <https://github.com/atomgalaxy/review-executor-sendrecv/issues/8>.
 
 ## Clarify when senders are reusable
 
