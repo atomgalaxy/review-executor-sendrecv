@@ -142,14 +142,34 @@ This is issue <https://github.com/atomgalaxy/review-executor-sendrecv/issues/8>.
 
 ## Clarify when senders are reusable
 
-The concepts seem to suggest that checking whether a sender is reusable is done using the concepts
+In §1.6.2 a hypothetical algorithm `retry` is described which would make
+repeated use of a sender:
 
-- `sender_to<S, R>` or equivalent `sender_to<S&&, R&&>` for once-sender
-- `sender_to<S&, R>` for multi-sender
+>The `set_error` member, on the other hand, reconstructs the operation state
+>in-place by making another call to `connect` with the original sender and a new
+>instance of the custom receiver.
 
-but the paper doesn't seem to provide rationale for this.
+The paper doesn't seem to discuss the possibility of sender reuse in describing
+the senders which the following open questions:
 
-TODO (Robert): please verify and expand this section to summarize issue.
+- Is reuse of senders intended?
+- If yes should this be conditional or unconditional?
+- If conditional under which conditions?
+
+Note that the example of `_then_sender` in §1.6.1 is suggests that senders are
+either:
+
+- Not intended to be reused
+- Only intended to be conditionally reused
+
+Given that `_then_sender::connect` is rvalue qualified (suggesting that once the
+function is called `*this` must not be reused).
+
+Based on a reference implementation (libunifex) the executors team suggested
+that `then` is meant to be transparent to the value category of the sender
+simply forwarding it through. While this may disqualify `_then_sender`
+as a counterexample to sender reusability it leaves open the question of
+intention and direction (i.e. the three questions enumerated above).
 
 This is issue <https://github.com/atomgalaxy/review-executor-sendrecv/issues/7>.
 
