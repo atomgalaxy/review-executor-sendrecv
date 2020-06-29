@@ -29,7 +29,20 @@ author:
 
 # Abstract
 
-This is the report of the Executors review group 2: Senders/Receivers.
+This is the report of the Executors review group 2: Senders/Receivers, of
+paper [@P0443R13].
+
+We found a few issues with the paper. Some have to do with a general lack of
+examples and the fact that the paper isn't finished. Due to the seeming
+generality of the mechanism and lack of example guidance and discussion,
+it is difficult to program against it without running into subtle impedance
+mismatches in interfaces. Clearer guidance on "how you should use this" as
+opposed to just concept definitions would be very welcome.
+
+As expected, the paper authors were extremely responsive during the review,
+and have already taken a number of issues under advisement.
+
+We are looking forward to the next iteration of the paper.
 
 # Findings
 
@@ -37,13 +50,16 @@ This is the report of the Executors review group 2: Senders/Receivers.
 
 The `scheduler` concept is underconstrained, because it does not define a sensible constraint for the produced sender. Therefore, one cannot write a receiver that would match any scheduler.
 
-Specifically, `scheduler` does not define what kind of sender `execution::schedule` returns, as what will be propagated to `set_value` of the receiver is undefined. From my understanding, the produced sender should be a `void`-sender (call `set_value()`).
+Specifically, `scheduler` does not define what kind of sender `execution::schedule` returns, as what will be propagated to `set_value` of the receiver is undefined. From our understanding, the produced sender should be a `void`-sender (call `set_value()`).
 
 Is this an omission in requirements, or are senders produced from `schedule` all allowed to produce values? If the latter is true, how should algorithms like `via`, `on` handle these values? 
 
 This is <https://github.com/executors/executors/issues/467> and <https://github.com/atomgalaxy/review-executor-sendrecv/issues/9> .
 
-To illustarte, it is unclear what types be used as `Args...` and `E` for the below receiver, for `execution::submit(execution::schedule(sch), my_receiver)` to be valid for any `scheduler sch`:
+To illustrate, it is unclear what types may be used as `Args...` and `E` for
+the below receiver, for `execution::submit(execution::schedule(sch), my_receiver)`
+to be valid for any `scheduler sch`:
+
 ```cpp
 struct my_receiver
 {
@@ -55,9 +71,13 @@ struct my_receiver
 
 ## More examples needed in order to explain misunderstandings
 
-We ran into trouble understanding the current intention for usage patterns of sender/receiver when trying to implement a telnet client. Kirk Shoop was kind enough to elaborate, but we never finished it regardless (although that was partly due to being dragged into other projects)..
+We ran into trouble understanding the current intention for usage of
+sender/receiver when trying to implement a telnet client. Kirk Shoop was kind
+enough to elaborate, but we never finished it regardless (although that was
+partly due to being dragged into other projects).
 
-The standard might not be a teaching document, but the papers should be. Kirk graciously supplied the following example of a telnetish-client:
+The standard might not be a teaching document, but the papers should be. Kirk
+graciously supplied the following example of a telnetish-client:
 
 ```cpp
 char const    hello[] = { 'h', 'e', 'l', 'l', 'o', '\n' };
@@ -74,11 +94,28 @@ sync_wait(
   context);
 ```
 
-This snippet, obviously, just does something akin to a "ping" but it does illustrate how an asynchronous client could be implemented.  The [experimental implementation](https://github.com/dietmarkuehl/kuhllib/tree/sender-receiver/src/sender-receiver) of the [Networking TS](http://wg21.link/n4771) using sender/receivers got to the point to make the above code operational.  An example of a telnet-like client implementation, for instance, would be welcome.
+This snippet, obviously, just does something akin to a "ping". It does
+illustrate how an asynchronous client could be implemented. The
+[experimental implementation](https://github.com/dietmarkuehl/kuhllib/tree/sender-receiver/src/sender-receiver)
+of the [Networking TS](http://wg21.link/n4771) using sender/receiver got to
+the point to make the above code operational. An example of a telnet-like
+client implementation, for instance, would be welcome.
 
-The [experimental implementation](https://github.com/dietmarkuehl/kuhllib/tree/sender-receiver/src/sender-receiver) was done natively instead of using the facilities from the [Networking TS](http://wg21.link/n4771). In retrospect it seems possible to use the interfaces from the [Networking TS](http://wg21.link/n4771) to implement the asynchronous operations in terms of sender/receivers, though: the sender would still be a custom class producing an operation state object. However, the actual asynchronous operation could use the completion token abstraction to plug into the sender/receiver protocol using the operation state. Such an implementation of the asynchronous operations isn't done, yet.
+The [experimental implementation](https://github.com/dietmarkuehl/kuhllib/tree/sender-receiver/src/sender-receiver)
+was done natively instead of using the facilities from the [Networking TS](http://wg21.link/n4771).
+In retrospect, it seems possible to use the interfaces from the
+[Networking TS](http://wg21.link/n4771) to implement the
+asynchronous operations in terms of sender/receiver, though: the sender
+would still be a custom class producing an operation state object. However,
+the actual asynchronous operation could use the completion token abstraction
+to plug into the sender/receiver protocol using the operation state. Such an
+implementation of the asynchronous operations isn't done, yet.
 
-It's also noted that the paper currently comes with quite a few TODOs, mainly about streams, which should probably be worked out before we ship the design. Without a streams concept it is unclear how to use sender/receivers to process repeated operations like repeatedly reading packets from a socket or repeatedly accepting a client connection when listening on a port.
+It's also noted that the paper currently comes with quite a few TODOs, mainly
+about streams, which should probably be worked out before we ship the design.
+Without a streams concept, it is unclear how to use sender/receivers to
+process repeated operations like repeatedly reading packets from a socket or
+repeatedly accepting a client connection when listening on a port.
 
 Main discussion: https://github.com/atomgalaxy/review-executor-sendrecv/issues/11
 
@@ -135,7 +172,7 @@ as an example) we find that:
   category of the function object when invoking it
 - For some type `F` which is lvalue invocable but not rvalue invocable (and
   which is also default constructible for ease of exposition):
-  - `executor_of<inline_executor, F>` is satistied but
+  - `executor_of<inline_executor, F>` is satisfied but
   - `inline_executor{}.execute(F{})` is ill-formed
 
 This is issue <https://github.com/atomgalaxy/review-executor-sendrecv/issues/8>.
@@ -183,9 +220,9 @@ the underlying receiver then that receiver's lifecycle is complete as per the
 "receiver contract" (i.e. one may no longer call receiver functions on it).
 Accordingly invoking `as-invocable::operator()` a second time would be invalid.
 
-Opposite suggesting lvalueness this formulation is evocative of rvalueness. This
-is bolstered by the fact that the implementation of `as-invocable` actually does
-move from its indirect receiver in `operator()`.
+While this suggests lvalueness, this semantic is instead evocative of
+rvalueness. This is bolstered by the fact that the implementation of
+`as-invocable` actually does move from its indirect receiver in `operator()`.
 
 More confusingly:
 
@@ -216,7 +253,9 @@ guarantee (i.e. if it throws it will leave the receiver in a state suitable for
 This is part of issue
 <https://github.com/atomgalaxy/review-executor-sendrecv/issues/5>.
 
-## The fallback wrapping providing implicit convertibility between types satisfying disparate concepts is confusinghttps://github.com/atomgalaxy/review-executor-sendrecv/issues/4
+## The fallback wrapping providing implicit convertibility between types satisfying disparate concepts is confusing
+
+Issue: https://github.com/atomgalaxy/review-executor-sendrecv/issues/4
 
 The current definitions of customization points are conflating the concepts,
 by providing a fallback wrapping. For example:
@@ -271,7 +310,7 @@ void executor_sender::submit(Receiver&& r)
 The paper also does not explain why `sender` can implicitly be treated as an
 `executor` via `execution::execute`. The problem with that wrapping is that
 it chooses one error handling strategy (terminate) when others may be
-possible, e.g. if a passed `invocable` has an `execption_ptr` overload, or
+possible, e.g. if a passed `invocable` has an `exception_ptr` overload, or
 receives an `error_code` argument. We encourage the authors to explore
 removing this implicit adaptation and eventually provide `as_receiver` as a
 library utility.
@@ -322,7 +361,7 @@ We suggest another example be provided to avoid further misunderstandings regard
 
 This is related to the extension of the senders/receiver design, proposed in  [P1898](wg21.link/p1898). 
 However, this touches a very basic semantics of the algorithms defined in terms of sender/receiver, and 
-we think that it would be beneficial to clarfiy this up-front.
+we think that it would be beneficial to clarify this up-front.
 
 With the `schedule_provider` concept it is possible to have two competing `schedulers` for the 
 single operation, and it is unclear where it will be actually executed.
